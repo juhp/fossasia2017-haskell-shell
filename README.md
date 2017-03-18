@@ -1,2 +1,3 @@
-# fossasia2017-haskell-shell
-Haskell Scripting workshop talk at 2017.fossasia.org
+# Haskell Shell Scripting talk at FOSSASIA 2017 (Singapore)
+
+http://2017.fossasia.org/schedule.html#s-2901

@@ -3,10 +3,10 @@
 % Jens Petersen (juhp)
 % FOSSASIA 2017 March 19th, Singapore
 
-# Haskell Shell Scripting (Jens Petersen)
+# Haskell Shell Scripting
 
-Slides: <http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell>\
-        (<http://bit.ly/2meIagR>)
+## Slides
+<http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell>
 
 ## Prerequisites
 
@@ -14,17 +14,16 @@ Slides: <http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell>\
 git clone https://github.com/juhp/fossasia2017-haskell-shell
 ```
 
-To follow along on your computer you will need to have __`ghc`__ installed.
-
-<https://www.haskell.org/ghc/> (>100MB)
+To follow along on your computer you will need to have [__`ghc`__](https://www.haskell.org/ghc) installed (download >100MB)
 
 ### Docker image (1.5GB)
 
 ```bash
-$ docker load -i fedora-haskell-shell-docker-image.tar.gz
+$ docker pull juhp/fedora-haskell-shell
 $ cd fossasia2017-haskell-shell/src
 $ docker run -it -v$PWD:/src:z juhp/fedora-haskell-shell
 ```
+(mounts host `src/` so can edit files on the host)
 
 # About you
 
@@ -65,9 +64,17 @@ diff -u --exclude="*.src.rpm" --exclude="*.tar.bz2" \
 
 ```
 
-Portable (though easily broken)
+# Shell is:
 
-but hard to maintain as scripts grow/snowball.
+- awesome!
+
+- relatively high level
+
+- as old as and the heart of Unix
+
+- Portable (though easily broken)
+
+- Hard to maintain as scripts become large.
 
 # Motivation
 
@@ -253,7 +260,7 @@ True :: Bool
 'a' :: Char
 "Hello!" :: String
 
-() :: ()
+() :: ()  -- unit type
 ```
 
 # Lists
@@ -310,6 +317,8 @@ getLine :: IO String
 
 # do blocks
 ```haskell
+#!/usr/bin/env runghc
+
 main = do
   let greet = "Hello"
   name <- getLine
@@ -330,7 +339,9 @@ sort :: Ord a => [a] -> [a]
 
 # `import System.Process`
 
-Exec:
+<https://hackage.haskell.org/package/process/docs/System-Process.html>
+
+Exec a command:
 
 ```haskell
 callProcess :: FilePath -> [String] -> IO ()
@@ -338,7 +349,9 @@ callProcess :: FilePath -> [String] -> IO ()
 callProcess "git" ["pull", "repos.git"]
 ```
 
-Shell command:
+# `import System.Process`
+
+shell a command:
 
 ```haskell
 callCommand :: String -> IO ()
@@ -353,6 +366,8 @@ Prelude> unlines ["one", "two", "three"]
 "one\ntwo\nthree\n"
 ```
 
+# `import System.Process`
+
 ```haskell
 readProcess :: FilePath -> [String] -> String -> IO String
 
@@ -360,12 +375,16 @@ files <- getDirectoryContents "."
 readProcess "grep" [".hs"] (unlines files)
 ```
 
+filter to haskell src files
+
 ```haskell
 filter :: (a -> Bool) -> [a] -> [a]
 isSuffixOf :: (Eq a) => [a] -> [a] -> Bool
 
 hsfiles = filter (isSuffixOf ".hs") files
 ```
+
+# `import System.Process`
 
 ## Exit codes
 
@@ -382,6 +401,9 @@ case results of
   ExitFailure _ -> putStrLn "different"
 ```
 
+# `import System.Process`
+
+
 ```haskell
 readProcessWithExitCode :: FilePath -> [String] -> String -> IO (ExitCode, String, String)
 
@@ -390,11 +412,18 @@ readProcessWithExitCode :: FilePath -> [String] -> String -> IO (ExitCode, Strin
 
 # Simple "pipes"
 
+Bourne shell
 ```bash
 $ ls | grep hs
 ```
 
+Haskell
+
 ```haskell
+import System.Process
+
+-- (>>=) :: Monad m => m a -> (a -> m b) -> m b
+
 readProcess "ls" [] "" >>= readProcess "grep" ["hs"]
 ```
 
@@ -402,45 +431,55 @@ readProcess "ls" [] "" >>= readProcess "grep" ["hs"]
 
 has real pipes
 
-```haskell
-runIO :: ShellCommand a => a -> IO ()
+<http://hackage.haskell.org/package/HSH/docs/HSH.html>
 
-runIO $ "ls" -|- length
+```haskell
+import HSH
+
+-- runIO :: ShellCommand a => a -> IO ()
+
+runIO $ "ls" -|- wcL
 ```
 
 # Lazy IO vs Streaming
 
-Turtle supports streaming
+Lazy IO is not really predictable enough, need to use pipes or streams.
+
+Turtle supports shell streaming:
+
+<https://hackage.haskell.org/package/turtle/docs/Turtle-Tutorial.html>
+
+```haskell
+import Turtle
+
+input "04-ls.hs" & inproc "nl" [] & stdout
+```
 
 # async
 
-Shelly and Turtle support running shell commands through the `async` library
+<https://hackage.haskell.org/package/async/docs/Control-Concurrent-Async.html>
+
+supports running shell commands through the `async` library
 
 ```haskell
 import Control.Concurrent.Async
 
-bg <- async (readProcess "du" ["/etc"] "")
+bg <- async (readProcess "du" ["/usr/lib"] "")
 bg2 <- async (rawSystem "sleep" ["5"])
 doSomeOtherStuff
-res <- poll bg
-wait bg2
+res <- poll bg2
+wait bg
 ```
+
+also works for Shelly and Turtle
 
 # Shell Monads
 
-- [turtle](https://hackage.haskell.org/package/turtle)
+- [turtle](https://hackage.haskell.org/package/turtle) - an elegant shell library
 
-- [Shelly](https://hackage.haskell.org/package/shelly)
-
-## Haskell replacement for Make
-
-- [shake](https://hackage.haskell.org/package/shake)
-    - [Development.Shake.Command](https://hackage.haskell.org/package/shake/docs/Development-Shake-Command.html)
-
+- [Shelly](https://hackage.haskell.org/package/shelly) - robust shell library
 
 # Haskell Resources
-
-![](HaskellLogoStyPreview-1.png "Haskell Logo")
 
 - <http://haskell.org>
 - <http://www.seas.upenn.edu/~cis194/>
@@ -449,9 +488,14 @@ wait bg2
 
 ## Haskell Shells
 
-- https://github.com/Gabriel439/Haskell-Turtle-Library/blob/master/slides/slides.md
-- https://github.com/jgoerzen/hsh/wiki
-- http://shakebuild.com/
+- [Turtle tutorial slides](https://github.com/Gabriel439/Haskell-Turtle-Library/blob/master/slides/slides.md)
+- <https://github.com/jgoerzen/hsh/wiki>
+- <http://shakebuild.com/>
+
+## A Haskell replacement for Make
+
+- [shake](https://hackage.haskell.org/package/shake) has shell library
+    - [Development.Shake.Command](https://hackage.haskell.org/package/shake/docs/Development-Shake-Command.html)
 
 # Thanks!
 
@@ -461,9 +505,7 @@ Questions?
 
 <http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell/>
 
-generated with [Pandoc](http://pandoc.org) and [Slidy2](https://www.w3.org/Talks/Tools/Slidy2)
-
-from <https://github.com/juhp/fossasia2017-haskell-shell/>
+(generated with [Pandoc](http://pandoc.org) and [Slidy2](https://www.w3.org/Talks/Tools/Slidy2) from <https://github.com/juhp/fossasia2017-haskell-shell/>)
 
 ## Contact
 

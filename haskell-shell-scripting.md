@@ -41,8 +41,7 @@ Jens Petersen
 - using Haskell since 1998
 - maintain the Fedora Haskell packages
 - Haskell Stackage curator
-- Red Hat: i18n Software Engineering Manager
-- based in Japan
+- Red Hat: i18n Software Engineering, based in Japan
 
 # What is shell script?
 
@@ -85,6 +84,12 @@ echo $MYNAME
 
 Does it run? Is it correct?
 
+```bash
+#!/bin/sh
+
+echo "Hello here!
+```
+
 - Runtime vs compile time errors
 
 ## Shell quoting and newline handling complicated
@@ -92,9 +97,9 @@ Does it run? Is it correct?
 - `"ls"` vs `"echo $(ls)"`
 - `$@` and `$*`
 
-[ShellCheck](http://www.shellcheck.net/)!
+[ShellCheck](http://www.shellcheck.net/) finds bugs in your shell scripts!
 
-# Hello World
+# Hello World Haskell script
 
 `src/01-hello.hs`:
 
@@ -155,6 +160,8 @@ programming language.
 
 Typed lambda calculus!
 
+Haskell has a strong community around it.
+
 # Functional
 
 - functions are first-class
@@ -186,15 +193,12 @@ Typed lambda calculus!
 
 - Every Haskell expression has a type
 - Types are type-checked at compile-time
-- Programs with type errors or mismatches\
-  will not compile
+- Programs with type errors or mismatches will not compile
 
 # Haskell 25 years old
-designed by a committee of CS academics\
-in the late 80's
+designed by a committee of CS academics in the late 80's
 
-to create a standard lazy\
-functional programming language
+to create a standard lazy functional programming language
 
 ![](HaskellLogoStyPreview-1.png "Haskell Logo")
 
@@ -289,6 +293,13 @@ Lazy evaluation allows infinite lists:
 naturals = [0..]
 ```
 
+```haskell
+take :: Int -> [a] -> [a]
+
+take 5 naturals
+==> [0, 1, 2, 3, 4]
+```
+
 # The IO Monad
 
 ```haskell
@@ -377,7 +388,7 @@ readProcessWithExitCode :: FilePath -> [String] -> String -> IO (ExitCode, Strin
 (res, out, err) <- readProcessWithExitCode "gcc" ["-o", "test", "test.c"]
 ```
 
-# Simple "pipe"
+# Simple "pipes"
 
 ```bash
 $ ls | grep hs
@@ -421,10 +432,15 @@ wait bg2
 
 - [Shelly](https://hackage.haskell.org/package/shelly)
 
-- shake [Development.Shake.Command](https://hackage.haskell.org/package/shake/docs/Development-Shake-Command.html)
+## Haskell replacement for Make
+
+- [shake](https://hackage.haskell.org/package/shake)
+    - [Development.Shake.Command](https://hackage.haskell.org/package/shake/docs/Development-Shake-Command.html)
 
 
 # Haskell Resources
+
+![](HaskellLogoStyPreview-1.png "Haskell Logo")
 
 - <http://haskell.org>
 - <http://www.seas.upenn.edu/~cis194/>
@@ -437,7 +453,9 @@ wait bg2
 - https://github.com/jgoerzen/hsh/wiki
 - http://shakebuild.com/
 
-# Thanks
+# Thanks!
+
+Questions?
 
 ## Slides
 

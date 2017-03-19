@@ -1,22 +1,30 @@
-% Haskell Shell Scripting workshop
+% ![](HaskellLogoStyPreview-1.png "Haskell Logo")\
+  Haskell Shell Scripting workshop
 % Jens Petersen (juhp)
-% FossAsia 2017 March 19th
+% FOSSASIA 2017 March 19th, Singapore
 
-# Requisites
+# Haskell Shell Scripting (Jens Petersen)
 
-To follow along on your computer you will need to have _`ghc`_  installed.
+Slides: <http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell>\
+        (<http://bit.ly/2meIagR>)
 
-- <https://www.haskell.org/ghc/>
+## Prerequisites
 
-# About me
+```
+git clone https://github.com/juhp/fossasia2017-haskell-shell
+```
 
-Jens Petersen
+To follow along on your computer you will need to have __`ghc`__ installed.
 
-- using Haskell since 1998
-- maintain the Fedora Haskell packages
-- Haskell Stackage curator
+<https://www.haskell.org/ghc/> (>100MB)
 
-- Red Hatter
+### Docker image (1.5GB)
+
+```bash
+$ docker load -i fedora-haskell-shell-docker-image.tar.gz
+$ cd fossasia2017-haskell-shell/src
+$ docker run -it -v$PWD:/src:z juhp/fedora-haskell-shell
+```
 
 # About you
 
@@ -26,6 +34,16 @@ How many people have done some programming in Haskell?
 
 How many people have GHC installed?
 
+# About me
+
+Jens Petersen
+
+- using Haskell since 1998
+- maintain the Fedora Haskell packages
+- Haskell Stackage curator
+- Red Hat: i18n Software Engineering Manager
+- based in Japan
+
 # What is shell script?
 
 ```bash
@@ -34,31 +52,83 @@ How many people have GHC installed?
 LANG=en_US.utf8 LC_COLLATE=C XMODIFIERS=@im=none /usr/bin/emacs -g 167x51 $@
 ```
 
-Traditional shell good for short quick scripting.
+Traditional shell good for short quick scripting or wrappers.
+
+```bash
+#!/bin/sh
+
+diff -u --exclude="*.src.rpm" --exclude="*.tar.bz2" \
+  --exclude="*.tar.gz" --exclude="*.tgz" --exclude="*~" \
+  --exclude=".build-*.log" --exclude="CVS" --exclude="FC-*" \
+  --exclude="RHEL-*" --exclude="branch" --exclude="i386" \
+  --exclude="x86_64" --exclude=".#*" --exclude="_darcs" --exclude=".git" \
+  $*
+
+```
 
 Portable (though easily broken)
 
-but hard to maintain as script grows/snowballs.
+but hard to maintain as scripts grow/snowball.
 
 # Motivation
+
+## Correctness
 
 ```bash
 #!/bin/sh
 
 echo "Hello!" +1
+
+MY_NAME=bob
+echo $MYNAME
 ```
 
-Does it run?
+Does it run? Is it correct?
 
-* Shell quoting and newline handling complicated:
+- Runtime vs compile time errors
 
-`ls` vs `echo $(ls)`
+## Shell quoting and newline handling complicated
 
-`$@` vs `$*`
+- `"ls"` vs `"echo $(ls)"`
+- `$@` and `$*`
 
-ShellCheck!
+[ShellCheck](http://www.shellcheck.net/)!
 
-# FIXME motivate following slides with Hashell examples:
+# Hello World
+
+`src/01-hello.hs`:
+
+```haskell
+#!/usr/bin/env runghc
+
+main = putStrLn "hello!"
+```
+
+Haskell programs need `main` to be defined.
+
+Run:
+
+```bash
+$ cd src
+$ runghc 01-hello.hs
+$ chmod u+x 01-hello.hs
+$ ./01-hello.hs           # interpreted
+$ ghc 01-hello.hs         # static linking
+$ ./01-hello
+$ ghc -dynamic 01-hello   # dynamic linking
+```
+
+Interactive interpreter ghci:
+
+```bash
+$ ghci 01-hello.hs
+GHCi, version 7.10.3: http://www.haskell.org/ghc/  :? for help
+Ok, modules loaded: Main.
+Prelude Main> main
+hello!
+Prelude Main> :quit
+Leaving GHCi.
+```
 
 # Why Functional Programming?
 
@@ -130,13 +200,41 @@ functional programming language
 
 # Haskell uses indentation heavily like Python
 
-example here!
+`02-hello-there.hs`:
+
+```haskell
+#!/usr/bin/env runghc
+
+echo = putStrLn
+
+main = do
+  echo "Hello"
+  echo "there!"
+```
 
 # Why ghc?
 
 Compiled and interpreted
 
 Standard Haskell compiler and libraries
+
+Fast compile and runtime
+
+Can compile final script and deploy it.
+
+# Variables
+
+`03-pwd.hs`
+
+```haskell
+#!/usr/bin/env runghc
+
+import System.Directory
+
+main = do
+  dir <- getCurrentDirectory
+  putStrLn dir
+```
 
 # Haskell Basic types
 
@@ -191,9 +289,7 @@ Lazy evaluation allows infinite lists:
 naturals = [0..]
 ```
 
-# Monads and IO
-
-# IO Monad
+# The IO Monad
 
 ```haskell
 putStrLn :: String -> IO ()
@@ -203,22 +299,98 @@ getLine :: IO String
 
 # do blocks
 ```haskell
-do
-let greet = "Hello"
-name <- getLine
-putStrLn $ greet ++ " Your name is " ++ name
+main = do
+  let greet = "Hello"
+  name <- getLine
+  putStrLn $ greet ++ " Your name is " ++ name
 ```
 
 # Exercise
 
-Implement simple `ls` command in Haskell using:
+Let's implement simple `ls` command in Haskell using:
 
+```haskell
+getDirectoryContents :: FilePath -> IO [FilePath]
 
+sort :: Ord a => [a] -> [a]
 ```
-import System.Directory
+
+`04-ls.hs`
+
+# `import System.Process`
+
+Exec:
+
+```haskell
+callProcess :: FilePath -> [String] -> IO ()
+
+callProcess "git" ["pull", "repos.git"]
 ```
 
-# HSH
+Shell command:
+
+```haskell
+callCommand :: String -> IO ()
+
+callCommand "du * 2>/dev/null"
+```
+
+```haskell
+Prelude> :type unlines
+unlines :: [String] -> String
+Prelude> unlines ["one", "two", "three"]
+"one\ntwo\nthree\n"
+```
+
+```haskell
+readProcess :: FilePath -> [String] -> String -> IO String
+
+files <- getDirectoryContents "."
+readProcess "grep" [".hs"] (unlines files)
+```
+
+```haskell
+filter :: (a -> Bool) -> [a] -> [a]
+isSuffixOf :: (Eq a) => [a] -> [a] -> Bool
+
+hsfiles = filter (isSuffixOf ".hs") files
+```
+
+## Exit codes
+
+```haskell
+rawSystem :: String -> [String] -> IO ExitCode
+
+system :: String -> IO ExitCode
+```
+
+```haskell
+result <- rawSystem "diff" ["-q", file1, file2]
+case results of
+  ExitSuccess -> putStrLn "same"
+  ExitFailure _ -> putStrLn "different"
+```
+
+```haskell
+readProcessWithExitCode :: FilePath -> [String] -> String -> IO (ExitCode, String, String)
+
+(res, out, err) <- readProcessWithExitCode "gcc" ["-o", "test", "test.c"]
+```
+
+# Simple "pipe"
+
+```bash
+$ ls | grep hs
+```
+
+```haskell
+readProcess "ls" [] "" >>= readProcess "grep" ["hs"]
+```
+
+# HSH library
+
+has real pipes
+
 ```haskell
 runIO :: ShellCommand a => a -> IO ()
 
@@ -227,7 +399,21 @@ runIO $ "ls" -|- length
 
 # Lazy IO vs Streaming
 
+Turtle supports streaming
+
 # async
+
+Shelly and Turtle support running shell commands through the `async` library
+
+```haskell
+import Control.Concurrent.Async
+
+bg <- async (readProcess "du" ["/etc"] "")
+bg2 <- async (rawSystem "sleep" ["5"])
+doSomeOtherStuff
+res <- poll bg
+wait bg2
+```
 
 # Shell Monads
 
@@ -235,23 +421,32 @@ runIO $ "ls" -|- length
 
 - [Shelly](https://hackage.haskell.org/package/shelly)
 
-- [shell-conduit](https://hackage.haskell.org/package/shell-conduit)
-
 - shake [Development.Shake.Command](https://hackage.haskell.org/package/shake/docs/Development-Shake-Command.html)
 
 
-# Resources
+# Haskell Resources
 
 - <http://haskell.org>
 - <http://www.seas.upenn.edu/~cis194/>
 - <http://haskellbook.com>
 - <https://www.schoolofhaskell.com/>
 
+## Haskell Shells
 
-# Slides
+- https://github.com/Gabriel439/Haskell-Turtle-Library/blob/master/slides/slides.md
+- https://github.com/jgoerzen/hsh/wiki
+- http://shakebuild.com/
+
+# Thanks
+
+## Slides
 
 <http://code.haskell.org/~juhp/talks/fossasia2017-haskell-shell/>
 
 generated with [Pandoc](http://pandoc.org) and [Slidy2](https://www.w3.org/Talks/Tools/Slidy2)
 
-from <https://github.com/juhp/presentations/tree/master/fossasia2017-haskell-shell/>
+from <https://github.com/juhp/fossasia2017-haskell-shell/>
+
+## Contact
+
+Github/Twitter: @juhp

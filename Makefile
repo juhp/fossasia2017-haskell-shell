@@ -2,10 +2,14 @@ PRESENTATION = haskell-shell-scripting
 
 PANDOC = pandoc
 
-PRODUCTION = --self-contained
+ifdef PRODUCTION
+MODE = --self-contained
+else
+MODE = "-V slidy-url=."
+endif
 
 slidy:
-	$(PANDOC) -s -t slidy -V slidy-url=. --smart -o $(PRESENTATION).html $(PRESENTATION).md
+	$(PANDOC) -s -t slidy $(MODE) --smart -o $(PRESENTATION).html $(PRESENTATION).md
 
 upload:
 	$(PANDOC) -s -t slidy --smart -o $(PRESENTATION).html $(PRESENTATION).md

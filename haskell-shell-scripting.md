@@ -23,7 +23,6 @@ $ docker pull juhp/fedora-haskell-shell
 $ cd fossasia2017-haskell-shell/src
 $ docker run -it -v$PWD:/src:z juhp/fedora-haskell-shell
 ```
-(mounts host `src/` so can edit files on the host)
 
 # About you
 
@@ -510,3 +509,5 @@ Questions?
 ## Contact
 
 Github/Twitter: @juhp
+
+![](HaskellLogoStyPreview-1.png "Haskell Logo")
